@@ -1,0 +1,19 @@
+{
+  "name": "baby-cry-ssl-plugin",
+  "version": "2.0.0",
+  "type": "module",
+  "license": "MIT",
+  "description": "婴儿哭声识别智能体（自训练 Wav2Vec2 checkpoint 版）：把本地 SSL 哭声分析服务接成 AGH 可调度工具",
+  "exports": "./index.mjs",
+  "agnes": {
+    "plugins": [
+      {
+        "export": "babyCrySslPlugin",
+        "id": "ext:baby-cry-ssl-plugin",
+        "inject": [
+          "extension"
+        ]
+      }
+    ]
+  }
+}

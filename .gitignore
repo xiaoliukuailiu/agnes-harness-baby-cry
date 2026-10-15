@@ -1,0 +1,13 @@
+# 模型权重（378MB，托管于单独仓库 Babycry-SSL 的 checkpoint/，用 Git LFS）
+backend-ssl/checkpoint-1500/model.safetensors
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# 系统
+.DS_Store
+Thumbs.db

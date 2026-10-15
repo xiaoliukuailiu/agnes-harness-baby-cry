@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>婴儿哭声分类 · 分析报告</title>
+<style>
+:root{
+  --bg:#0d1117; --bg-2:#161b22; --bg-3:#1c2330; --card:#151b23;
+  --line:#2a3340; --line-2:#3a4553;
+  --txt:#e6edf3; --txt-2:#9aa7b4; --txt-3:#5f6b7a;
+  --accent:#4cc2ff; --accent-2:#2b8fd6; --ok:#3fb950; --warn:#d29922; --bad:#f85149;
+  --bar1:#4cc2ff; --bar2:#5c8dd6; --bar3:#7a6fc0; --bar4:#c06f9a; --bar5:#c0896f; --bar6:#8fa05c;
+  --shadow:0 8px 30px rgba(0,0,0,.45);
+  font-synthesis:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{
+  background:radial-gradient(1200px 600px at 80% -10%,#16263b 0%,var(--bg) 55%) fixed,var(--bg);
+  color:var(--txt);
+  font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,"Microsoft YaHei","PingFang SC",sans-serif;
+  line-height:1.55; padding:0 0 60px;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+/* ===== top bar ===== */
+.top{position:sticky;top:0;z-index:20;backdrop-filter:blur(10px);
+  background:linear-gradient(var(--bg) 60%,rgba(13,17,23,.85));
+  border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 20px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:26px;
+  background:linear-gradient(145deg,#1d3a55,#0f1e2e);border:1px solid var(--line-2);box-shadow:var(--shadow)}
+.brand h1{margin:0;font-size:18px;font-weight:600;letter-spacing:.2px}
+.brand p{margin:2px 0 0;font-size:12px;color:var(--txt-3)}
+.status{font-size:12.5px;padding:7px 12px;border-radius:999px;border:1px solid var(--line-2);
+  color:var(--txt-2);white-space:nowrap;display:flex;align-items:center;gap:8px}
+.status .dot{width:8px;height:8px;border-radius:50%;background:var(--txt-3)}
+.status.ready{color:#b6f0c1;border-color:#2f5d39}.status.ready .dot{background:var(--ok)}
+.status.err{color:#ffc2bd;border-color:#5d2f2f}.status.err .dot{background:var(--bad)}
+
+/* ===== sections ===== */
+main.wrap{padding-top:28px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow)}
+.card + .card{margin-top:20px}
+h2{margin:0 0 4px;font-size:15px;color:var(--txt);font-weight:600;display:flex;align-items:center;gap:9px}
+h2 .ico{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:15px;
+  background:var(--bg-3);border:1px solid var(--line-2)}
+.sub{margin:0;color:var(--txt-3);font-size:12.5px}
+
+/* ===== input ===== */
+.modes{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.mode{flex:1;min-width:220px;background:var(--bg-3);border:1px solid var(--line);border-radius:12px;
+  padding:14px;cursor:pointer;transition:.18s;text-align:left}
+.mode.active{border-color:var(--accent);background:linear-gradient(180deg,#152434,#101925);
+  box-shadow:0 0 0 3px rgba(76,194,255,.12)}
+.mode .t{font-weight:600;font-size:14px}
+.mode .d{font-size:12px;color:var(--txt-3);margin-top:3px}
+
+.drop{border:1.5px dashed var(--line-2);border-radius:12px;padding:22px;text-align:center;cursor:pointer;
+  transition:.18s;color:var(--txt-2);font-size:13px}
+.drop:hover,.drop.over{border-color:var(--accent);background:#10202e;color:var(--txt)}
+.drop .big{font-size:26px;margin-bottom:6px}
+.drop span small{color:var(--txt-3)}
+.filemeta{margin-top:10px;font-size:12.5px;color:var(--txt-2);display:none;align-items:center;gap:8px}
+.filemeta.show{display:flex}
+
+.rec{display:none}
+.rec.show{display:block}
+.mic{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.micbtn{width:60px;height:60px;border-radius:50%;border:none;cursor:pointer;font-size:24px;
+  background:linear-gradient(145deg,#2b3f55,#16222f);color:var(--txt);display:grid;place-items:center;
+  transition:.15s;border:1px solid var(--line-2)}
+.micbtn.recording{background:linear-gradient(145deg,#5d2f2f,#2a1616);box-shadow:0 0 0 5px rgba(248,81,73,.18)}
+.micbtn:active{transform:scale(.95)}
+.recmeta{font-size:13px;color:var(--txt-2);min-width:150px}
+.recmeta .time{font-size:22px;color:var(--txt);font-variant-numeric:tabular-nums;font-weight:600}
+
+button.run{margin-top:18px;width:100%;border:none;cursor:pointer;border-radius:12px;padding:14px;font-size:15px;
+  font-weight:600;color:#04121b;background:linear-gradient(135deg,#6fd2ff,#3aa0d6);transition:.18s;
+  box-shadow:0 6px 20px rgba(58,160,214,.35)}
+button.run:hover:not(:disabled){filter:brightness(1.06);transform:translateY(-1px)}
+button.run:disabled{background:#2a3442;color:var(--txt-3);cursor:not-allowed;box-shadow:none}
+
+/* ===== waveform ===== */
+#waveCanvas{width:100%;height:120px;display:block;border-radius:10px;background:var(--bg-3);border:1px solid var(--line)}
+.wavehint{font-size:12px;color:var(--txt-3);margin-top:8px}
+
+/* ===== report ===== */
+#report{display:none}
+#report.show{display:block}
+.report-meta{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:12.5px;color:var(--txt-2)}
+.report-meta b{color:var(--txt);font-weight:600}
+.verdict{display:flex;align-items:center;gap:18px;margin-bottom:20px}
+.verdict .main{flex:1}
+.pct{font-size:46px;font-weight:700;color:var(--accent);line-height:1}
+.pct small{font-size:16px;color:var(--txt-3)}
+.verdict .lbl{font-size:24px;font-weight:650}
+.verdict .lbl em{font-style:normal;font-size:13px;color:var(--txt-3);font-weight:400}
+.grid{display:grid;grid-template-columns:1.3fr 1fr;gap:18px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--bg-3);border:1px solid var(--line);border-radius:14px;padding:18px}
+.panel h3{margin:0 0 14px;font-size:13px;color:var(--txt-2);font-weight:600;letter-spacing:.3px}
+.bar-row{display:grid;grid-template-columns:112px 1fr 46px;gap:10px;align-items:center;margin:9px 0;font-size:13px}
+.bar-row .name{color:var(--txt-2)}
+.bar-row .name b{color:var(--txt);font-weight:500}
+.track{height:12px;background:#0c1420;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.fill{height:100%;border-radius:999px;transition:width .7s cubic-bezier(.2,.7,.2,1)}
+.bar-row .val{text-align:right;font-variant-numeric:tabular-nums;color:var(--txt)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:13px}
+.kv dt{color:var(--txt-3)}
+.kv dd{margin:0;color:var(--txt);font-variant-numeric:tabular-nums;text-align:right}
+
+.advice{list-style:none;margin:0;padding:0}
+.advice li{position:relative;padding-left:22px;margin:9px 0;font-size:13.5px;color:var(--txt-2)}
+.advice li::before{content:"";position:absolute;left:2px;top:8px;width:7px;height:7px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 0 3px rgba(76,194,255,.18)}
+.danger{border-left:3px solid var(--bad);padding:4px 0 4px 14px;margin:4px 0}
+.danger li{margin:7px 0;font-size:13px;color:#f0a9a5}
+.danger li::before{content:"⚠";position:absolute;left:0}
+.danger{position:relative}
+
+.warnings{margin-top:14px}
+.warn-chip{display:inline-block;font-size:12px;color:#f5d97f;background:#2a2410;border:1px solid #5a4a1a;
+  padding:5px 10px;border-radius:8px;margin:4px 6px 0 0}
+.muted{color:var(--txt-3);font-size:13px}
+
+/* ===== actions ===== */
+.actions{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
+.btn{border:1px solid var(--line-2);background:var(--bg-3);color:var(--txt);padding:11px 18px;border-radius:10px;
+  cursor:pointer;font-size:13.5px;font-weight:500;transition:.15s}
+.btn:hover{border-color:var(--accent);background:#122232}
+.btn.primary{background:linear-gradient(135deg,#6fd2ff,#3aa0d6);color:#04121b;border:none;font-weight:600}
+
+.errbox{display:none;background:#2a1616;border:1px solid #5d2f2f;color:#ffc2bd;border-radius:12px;
+  padding:16px;font-size:13.5px}
+.errbox.show{display:block}
+.spinner{width:16px;height:16px;border:2px solid rgba(4,18,27,.3);border-top-color:#04121b;border-radius:50%;
+  animation:spin .7s linear infinite;display:inline-block;vertical-align:-3px;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+footer{text-align:center;color:var(--txt-3);font-size:12px;margin-top:34px;line-height:1.7}
+
+/* ===== export/print ===== */
+@media print{
+  .top,.actions,.rec,.modes,.drop{display:none!important}
+  body{background:#fff;color:#111}
+  .card,.panel{background:#fff;border:1px solid #ddd;box-shadow:none}
+  .sub,.muted,.warn-chip{color:#555}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <div class="logo">👶</div>
+      <div>
+        <h1>婴儿哭声分类 · 分析报告</h1>
+        <p>自训练 Wav2Vec2 模型 · 本地推理 · 结果仅供辅助，不构成医疗诊断</p>
+      </div>
+    </div>
+    <div class="status" id="status"><span class="dot"></span>后端状态检测中…</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- ===== 输入卡片 ===== -->
+  <section class="card" id="inputCard">
+    <h2><span class="ico">🎙️</span>输入录音</h2>
+    <p class="sub">上传音频文件，或用设备实时录制（建议 3–10 秒、靠近宝宝、环境安静）</p>
+
+    <div class="modes" style="margin-top:16px">
+      <button class="mode active" id="modeFile" type="button">
+        <div class="t">📁 上传文件</div>
+        <div class="d">wav / mp3 / flac / ogg，≤ 20MB</div>
+      </button>
+      <button class="mode" id="modeRec" type="button">
+        <div class="t">⏺️ 实时录音</div>
+        <div class="d">浏览器麦克风录制</div>
+      </button>
+    </div>
+
+    <div id="fileBox">
+      <label class="drop" id="drop" for="file">
+        <div class="big">📥</div>
+        点击选择或拖拽音频到此处
+        <div><small>支持 wav / mp3 / flac / ogg · 建议 3–10 秒 · 单文件 ≤ 20MB</small></div>
+      </label>
+      <input type="file" id="file" accept="audio/*" hidden />
+      <div class="filemeta" id="filemeta"></div>
+    </div>
+
+    <div class="rec" id="recBox">
+      <div class="mic">
+        <button class="micbtn" id="micBtn" title="开始/停止录音">⏺</button>
+        <div class="recmeta">
+          <div class="time" id="recTime">00:00</div>
+          <div id="recState">点击开始录音（建议 3–10 秒）</div>
+        </div>
+      </div>
+      <div class="filemeta" id="recmeta" style="margin-top:14px"></div>
+    </div>
+
+    <div style="margin-top:18px">
+      <canvas id="waveCanvas"></canvas>
+      <div class="wavehint" id="waveHint">波形预览：选择 / 录制音频后显示</div>
+    </div>
+
+    <button class="run" id="runBtn" disabled>开始分析</button>
+  </section>
+
+  <!-- ===== 错误卡片 ===== -->
+  <section class="card" id="aghCard" style="display:none">
+    <h2><span class="ico">🤖</span>AGH 智能体联动</h2>
+    <p class="sub" id="aghSub">AGH 会话刚调用了哭声分析工具，结果已同步到下方「分析报告」</p>
+  </section>
+
+  <section class="errbox" id="errbox"></section>
+
+  <!-- ===== 报告卡片 ===== -->
+  <section class="card" id="report">
+    <h2><span class="ico">📄</span>分析报告</h2>
+    <p class="sub" id="repSub">点击下方「导出报告」可保存为 HTML 文件</p>
+
+    <div class="report-meta" id="repMeta"></div>
+
+    <div class="verdict" style="margin-top:18px">
+      <div class="pct" id="vPct">–<small>%</small></div>
+      <div class="main">
+        <div class="lbl" id="vLabel">–</div>
+        <div class="sub" id="vLabelZh"></div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <h3>候选分布（Top-K）</h3>
+        <div id="dist"></div>
+      </div>
+      <div class="panel">
+        <h3>声学特征</h3>
+        <dl class="kv" id="acoustics"></dl>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:18px">
+      <div class="panel">
+        <h3>护理建议</h3>
+        <ul class="advice" id="advice"></ul>
+      </div>
+      <div class="panel">
+        <h3>需要立即就医的危险信号</h3>
+        <ul class="advice danger" id="redFlags"></ul>
+      </div>
+    </div>
+
+    <div class="warnings" id="warnBox"></div>
+
+    <div class="panel" style="margin-top:18px">
+      <h3>模型信息</h3>
+      <dl class="kv" id="modelInfo"></dl>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="exportBtn">⬇️ 导出报告（HTML）</button>
+      <button class="btn" id="printBtn">🖨️ 打印 / 另存 PDF</button>
+      <button class="btn" id="againBtn">↻ 重新分析</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  本工具输出仅用于辅助理解宝宝可能的不适信号，<b>不能替代医生诊断</b>。<br>
+  若宝宝出现发热、拒奶、血便、抽搐、口唇发青、意识异常等情况，请立即就医。
+</footer>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const BACKEND=location.hostname? 'http://127.0.0.1:8800' : 'http://127.0.0.1:8800';
+  const COLORS=['#4cc2ff','#5c8dd6','#7a6fc0','#c06f9a','#c0896f','#8fa05c'];
+  let audioBlob=null, audioName='录音', lastResult=null, lastMeta=null;
+
+  /* ---------- 后端健康 ---------- */
+  async function checkHealth(){
+    const s=$('status');
+    try{
+      const r=await fetch(BACKEND+'/health');const j=await r.json();
+      if(j.status==='ready'){
+        s.className='status ready';
+        s.innerHTML='<span class="dot"></span>就绪 · '+ (j.model_base||'model') +' @ '+ (j.num_labels||6)+' 类 · 端口 8800';
+      }else throw new Error(j.model_error||j.message||'not ready');
+    }catch(e){
+      s.className='status err';
+      s.innerHTML='<span class="dot"></span>后端未连接（'+BACKEND+'）· 请启动 backend-ssl';
+    }
+  }
+
+  /* ---------- 模式切换 ---------- */
+  function setMode(m){
+    const file=m==='file';
+    $('modeFile').classList.toggle('active',file);
+    $('modeRec').classList.toggle('active',!file);
+    $('fileBox').style.display=file?'block':'none';
+    $('recBox').classList.toggle('show',!file);
+    if(!file){audioBlob=null;resetRun();}
+    else{audioBlob=audioBlob&&audioName!=='录音'?audioBlob:null;resetRun();}
+    syncRun();
+  }
+  $('modeFile').onclick=()=>setMode('file');
+  $('modeRec').onclick=()=>setMode('rec');
+
+  /* ---------- 文件选择 ---------- */
+  function pickFile(f){
+    if(!f)return;
+    if(f.size>20*1024*1024){showErr('文件超过 20MB 上限：'+fmtMB(f.size));return;}
+    audioBlob=f;audioName=f.name;
+    const meta=$('filemeta');meta.classList.add('show');
+    meta.innerHTML='✅ <b>'+f.name+'</b> · '+fmtMB(f.size);
+    $('recmeta').classList.remove('show');
+    syncRun();
+    setTimeout(drawWaveFromBlob,0);
+  }
+  $('file').onchange=e=>pickFile(e.target.files[0]);
+  const drop=$('drop');
+  ['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over');}));
+  drop.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)pickFile(f);});
+
+  /* ---------- 录音 ---------- */
+  let mediaRec=null,recChunks=[],recStart=0,recTimer=null,isRec=false;
+  $('micBtn').onclick=async()=>{
+    if(!isRec){
+      try{
+        const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+        mediaRec=new MediaRecorder(stream);recChunks=[];
+        mediaRec.ondataavailable=e=>recChunks.push(e.data);
+        mediaRec.onstop=async()=>{
+          stream.getTracks().forEach(t=>t.stop());
+          const blob=new Blob(recChunks,{type:mediaRec.mimeType||'audio/webm'});
+          audioBlob=blob;audioName='录音_'+new Date().toLocaleTimeString('zh-CN');
+          const meta=$('recmeta');meta.classList.add('show');
+          meta.innerHTML='✅ <b>'+audioName+'</b> · '+fmtMB(blob.size);
+          $('recState').textContent='已录制，可开始分析';
+          syncRun();
+          setTimeout(drawWaveFromBlob,0);
+        };
+        mediaRec.start();isRec=true;recStart=Date.now();
+        $('micBtn').textContent='⏹';$('micBtn').classList.add('recording');
+        $('recState').textContent='正在录音…点击停止';
+        recTimer=setInterval(()=>{$('recTime').textContent=fmtTime((Date.now()-recStart)/1000);},200);
+      }catch(e){showErr('无法访问麦克风：'+e.message+'（请检查浏览器权限）');}
+    }else{
+      mediaRec.stop();isRec=false;clearInterval(recTimer);
+      $('micBtn').textContent='⏺';$('micBtn').classList.remove('recording');
+    }
+  };
+
+  /* ---------- 波形绘制 ---------- */
+  function drawWaveFromBlob(){
+    const c=$('waveCanvas');
+    const ctx=c.getContext('2d');
+    const dpr=window.devicePixelRatio||1;
+    c.width=c.clientWidth*dpr;c.height=c.clientHeight*dpr;ctx.scale(dpr,dpr);
+    ctx.clearRect(0,0,c.clientWidth,c.clientHeight);
+    if(!audioBlob)return;
+    const url=URL.createObjectURL(audioBlob);
+    const audio=new Audio(url);
+    audio.onloadedmetadata=async()=>{
+      try{
+        const buf=await audio.decodeAudioData(await (await fetch(url)).arrayBuffer());
+        const data=buf.getChannelData(0);
+        const n=data.length,step=Math.max(1,Math.floor(n/c.clientWidth));
+        const mid=c.clientHeight/2;
+        ctx.fillStyle='rgba(76,194,255,.15)';
+        ctx.fillRect(0,0,c.clientWidth,c.clientHeight);
+        ctx.strokeStyle='#4cc2ff';ctx.lineWidth=1;ctx.beginPath();
+        for(let x=0;x<c.clientWidth;x++){
+          let peak=0;
+          const i0=x*step,i1=Math.min(n,(x+1)*step);
+          for(let i=i0;i<i1;i++){const v=data[i];if(Math.abs(v)>peak)peak=Math.abs(v);}
+          const h=peak*(c.clientHeight*0.9);
+          ctx.moveTo(x+0.5,mid-h/2);ctx.lineTo(x+0.5,mid+h/2);
+        }
+        ctx.stroke();
+        ctx.strokeStyle='rgba(255,255,255,.15)';ctx.beginPath();ctx.moveTo(0,mid);ctx.lineTo(c.clientWidth,mid);ctx.stroke();
+        $('waveHint').textContent='波形：采样率 '+buf.sampleRate+'Hz · 时长 '+(buf.duration).toFixed(1)+'s · '+(data.length/1000).toFixed(0)+'k 采样点';
+        lastMeta={duration:buf.duration,sr:buf.sampleRate};
+      }catch(e){$('waveHint').textContent='波形解析失败（格式可能不受浏览器支持），仍可提交分析：'+e.message;}
+      URL.revokeObjectURL(url);
+    };
+  }
+  function syncRun(){$('runBtn').disabled=!audioBlob;}
+  $('modeFile').addEventListener('click',syncRun);$('modeRec').addEventListener('click',syncRun);
+
+  /* ---------- 提交分析 ---------- */
+  $('runBtn').onclick=async()=>{
+    if(!audioBlob)return;
+    const b=$('runBtn');b.disabled=true;const old=b.textContent;
+    b.innerHTML='<span class="spinner"></span>正在分析…';
+    const rep=$('report');rep.classList.remove('show');$('errbox').classList.remove('show');
+    try{
+      const base64=await blobToBase64(audioBlob);
+      const r=await fetch(BACKEND+'/analyze',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({audio_base64:base64,top_k:6})});
+      const j=await r.json();
+      if(j.status==='ok'||j.status==='silence'){renderReport(j);}
+      else showErr('分析失败 ['+j.error_type+']：'+j.message);
+    }catch(e){showErr('请求失败：'+e.message+'（确认后端 8800 已启动且允许浏览器跨域访问）');}
+    finally{b.disabled=false;b.textContent='开始分析';}
+  };
+
+  /* ---------- 报告渲染 ---------- */
+  async function renderReport(j){
+    lastResult=j;
+    const labels=await fetchLabels();
+    const rep=$('report');rep.classList.add('show');$('errbox').classList.remove('show');
+
+    // meta
+    const a=j.acoustics||{};
+    $('repMeta').innerHTML=[
+      ['文件',j.audio? (j.audio.source||audioName) : audioName],
+      ['时长',(a.duration_sec||lastMeta?.duration||'–')+' s'],
+      ['分析窗口',(a.analyzed_segment_sec||'–')+' s'],
+      ['候选段',a.candidate_segments||'–'],
+      ['推理耗时',(j.latency_ms||'–')+' ms'],
+    ].map(([k,v])=>'<div>'+k+' <b>'+v+'</b></div>').join('') +
+      '<div style="margin-left:auto">生成于 '+new Date().toLocaleString('zh-CN')+'</div>';
+
+    if(j.status==='silence'){
+      $('vLabel').textContent='未检测到哭声';
+      $('vLabelZh').textContent='判定为静音 / 底噪，未进行分类';
+      $('vPct').innerHTML='–<small></small>';
+      $('dist').innerHTML='<p class="muted">'+esc(j.message||'能量过低')+'</p>';
+      $('acoustics').innerHTML=[
+        ['整体 RMS',a.rms!=null?Number(a.rms).toFixed(4):'–'],
+        ['音频来源',j.audio? (j.audio.source||audioName) : audioName],
+      ].map(([k,v])=>'<dt>'+k+'</dt><dd>'+esc(v)+'</dd>').join('');
+      const w=$('warnBox');w.innerHTML='<div style="font-size:13px;color:var(--txt-2);margin-top:14px">'+(j.hint||'建议重新录制')+'</div>';
+      $('advice').innerHTML='<li class="muted">未检测到有效哭声，暂无护理建议。'+(j.hint||'请重新录制靠近宝宝的哭声片段。')+'</li>';
+      fillRedFlags(labels);
+      $('modelInfo').innerHTML=modelKv(j.model);
+      rep.scrollIntoView({behavior:'smooth'});
+      return;
+    }
+
+    // 主结论
+    $('vLabel').textContent=j.top_label_zh||j.top_label;
+    $('vLabelZh').textContent='（'+j.top_label+'）';
+    $('vPct').innerHTML=(j.top_confidence*100).toFixed(1)+'<small>%</small>';
+
+    // 分布
+    const max=Math.max(...(j.distribution||[]).map(d=>d.score),0.0001);
+    $('dist').innerHTML=(j.distribution||[]).map((d,i)=>{
+      const pct=(d.score*100).toFixed(1);
+      const w=(d.score/max*100).toFixed(1);
+      return '<div class="bar-row">'
+        +'<div class="name">'+(d.label_zh||d.label)+'</div>'
+        +'<div class="track"><div class="fill" style="width:'+w+'%;background:'+COLORS[i%COLORS.length]+'"></div></div>'
+        +'<div class="val">'+pct+'%</div></div>';
+    }).join('');
+
+    // 声学
+    $('acoustics').innerHTML=[
+      ['整体 RMS',a.rms!=null?Number(a.rms).toFixed(4):'–'],
+      ['哭声帧占比',a.cry_segment_ratio!=null?(a.cry_segment_ratio*100).toFixed(0)+'%':'–'],
+      ['估算基频 F0',a.estimated_f0_hz!=null?a.estimated_f0_hz+' Hz':'N/A'],
+      ['分析窗口',a.analyzed_segment_sec+' s'],
+      ['候选段数',a.candidate_segments||'–'],
+    ].map(([k,v])=>'<dt>'+k+'</dt><dd>'+v+'</dd>').join('');
+
+    // 建议（用后端 labels 字典，兜底用结果里的 advice）
+    const adv=(labels.advice&&labels.advice[j.top_label])||j.advice||[];
+    $('advice').innerHTML=adv.length?adv.map(x=>'<li>'+x+'</li>').join('')
+      :'<li class="muted">无（该类别暂无建议字典）</li>';
+    fillRedFlags(labels);
+
+    // 告警
+    const wb=$('warnBox');
+    if(j.warnings&&j.warnings.length){
+      wb.innerHTML='<div style="font-size:12.5px;color:var(--txt-3);margin-bottom:8px">异常提醒</div>'
+        +j.warnings.map(x=>'<span class="warn-chip">'+x+'</span>').join('');
+    }else{wb.innerHTML='';}
+
+    $('modelInfo').innerHTML=modelKv(j.model);
+    setTimeout(()=>rep.scrollIntoView({behavior:'smooth'}),50);
+  }
+  function fillRedFlags(labels){
+    const rf=(labels&&labels.red_flags)||lastResult?.red_flags||[];
+    $('redFlags').innerHTML=rf.length?rf.map(x=>'<li>'+x+'</li>').join(''):'<li class="muted">–</li>';
+  }
+  function modelKv(m){
+    m=m||{};
+    return [
+      ['基座模型',m.base||'–'],
+      ['架构',m.architecture||'–'],
+      ['Checkpoint',m.checkpoint||'–'],
+      ['训练数据',m.dataset||'–'],
+      ['原生采样率',(m.native_hz||'–')+' Hz'],
+      ['分析窗口',(m.window_sec||'–')+' s'],
+    ].filter(r=>r[1]&&r[1]!=='–').map(([k,v])=>'<dt>'+k+'</dt><dd>'+esc(v)+'</dd>').join('')
+      ||'<dd class="muted">未提供</dd>';
+  }
+  let labelsCache=null;
+  async function fetchLabels(){
+    if(labelsCache)return labelsCache;
+    try{const r=await fetch(BACKEND+'/labels');labelsCache=await r.json();}catch(e){labelsCache=null;}
+    return labelsCache||{};
+  }
+
+  /* ---------- 导出 / 打印 ---------- */
+  $('exportBtn').onclick=()=>{
+    const rep=$('report');
+    const clone=document.documentElement.cloneNode(true);
+    const c=clone.querySelector('#report');c.classList.add('show');
+    clone.querySelector('#exportBtn').closest('.actions').remove();
+    clone.querySelector('#inputCard').remove();
+    clone.querySelector('#status').textContent='';
+    const html='<!DOCTYPE html>'+clone.outerHTML;
+    const blob=new Blob([html],{type:'text/html'});
+    const a=document.createElement('a');
+    const ts=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+    a.href=URL.createObjectURL(blob);a.download='婴儿哭声报告_'+(lastResult?.top_label||'结果')+'_'+ts+'.html';
+    a.click();URL.revokeObjectURL(a.href);
+  };
+  $('printBtn').onclick=()=>window.print();
+  $('againBtn').onclick=()=>{window.scrollTo({top:0,behavior:'smooth'});$('report').classList.remove('show');};
+
+  /* ---------- utils ---------- */
+  function showErr(m){const e=$('errbox');e.classList.add('show');e.textContent='⚠ '+m;}
+  function blobToBase64(blob){return new Promise((res,rej)=>{const fr=new FileReader();
+    fr.onload=()=>res(fr.result.split(',')[1]);fr.onerror=rej;fr.readAsDataURL(blob);});}
+  function fmtMB(b){return (b/1048576).toFixed(2)+' MB';}
+  function fmtTime(s){const m=String(Math.floor(s/60)).padStart(2,'0');const ss=String(Math.floor(s%60)).padStart(2,'0');return m+':'+ss;}
+  function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+  /* ---------- AGH 联动轮询 ---------- */
+  let lastAghTs=null;
+  async function pollLatest(){
+    try{
+      const r=await fetch(BACKEND+'/latest');const j=await r.json();
+      if(!j.latest)return;
+      const L=j.latest;
+      if(L.source!=='agh')return;               // 只联动 AGH 会话产生的结果
+      if(lastAghTs===null){lastAghTs=L.received_at;return;} // 首轮只记录基线，不回放旧结果
+      if(L.received_at===lastAghTs)return;
+      lastAghTs=L.received_at;
+      $('aghCard').style.display='block';
+      $('aghSub').innerHTML='🤖 AGH 智能体于 <b>'+esc(L.received_at)+'</b> 调用了 analyze_baby_cry_ssl，'
+        +'结果已同步到下方「分析报告」（来源标记 source=agh）';
+      renderReport(L);
+    }catch(e){/* 后端未起时静默 */}
+  }
+  setInterval(pollLatest,2500);pollLatest();
+
+  /* ---------- init ---------- */
+  checkHealth();setMode('file');
+})();
+</script>
+</body>
+</html>

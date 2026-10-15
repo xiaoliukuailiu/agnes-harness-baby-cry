@@ -1,0 +1,214 @@
+{
+  "comment": "离线 mock：3 段哭声音频的 analyze 后端返回 + 各自的 expected_label。run.mjs 在 offline 模式下用这些，不碰真实模型。字段结构与 backend-ssl/server.py 的 /analyze 响应一致。",
+  "clips": [
+    {
+      "id": "01_hungry",
+      "audio_path": "fixture/01_hungry.wav",
+      "expected_label": "hungry",
+      "analyze": {
+        "status": "ok",
+        "top_label": "hungry",
+        "top_label_zh": "饥饿",
+        "top_confidence": 0.82,
+        "distribution": [
+          { "label": "hungry", "label_zh": "饥饿", "score": 0.82 },
+          { "label": "disturbance", "label_zh": "不安/烦躁", "score": 0.08 },
+          { "label": "uncomfortable", "label_zh": "难受不适", "score": 0.05 },
+          { "label": "fright", "label_zh": "受惊", "score": 0.03 },
+          { "label": "pain", "label_zh": "疼痛", "score": 0.015 },
+          { "label": "angry", "label_zh": "生气", "score": 0.005 }
+        ],
+        "advice": [
+          "观察觅食信号：张嘴、转头寻乳、吸吮手指",
+          "按需喂养，记录本次开始与结束时间",
+          "留意上次喂养距今时长，逐步建立喂养规律"
+        ],
+        "red_flags": [
+          "哭闹持续超过 3 小时且无法安抚",
+          "发热、呕吐、血便、拒奶或尿量明显减少",
+          "哭声高尖刺耳（脑膜炎样哭声）或异常微弱",
+          "伴随呼吸费力、口唇发青、意识异常、抽搐"
+        ],
+        "acoustics": {
+          "duration_sec": 8.4,
+          "rms": 0.031,
+          "analyzed_segment_sec": 10.0,
+          "candidate_segments": 2,
+          "cry_segment_ratio": 0.72,
+          "estimated_f0_hz": 412.5
+        },
+        "model": {
+          "checkpoint": "C:\\Users\\lmy\\Desktop\\checkpoint-1500",
+          "base": "facebook/wav2vec2-base",
+          "architecture": "Wav2Vec2ForSequenceClassification",
+          "dataset": "Baby Chillanto（参赛者自行处理，混合采样平衡）",
+          "native_hz": 16000,
+          "window_sec": 10.0
+        },
+        "warnings": [],
+        "latency_ms": 342
+      }
+    },
+    {
+      "id": "02_pain_lowconf",
+      "audio_path": "fixture/02_pain.wav",
+      "expected_label": "pain",
+      "expect_fail": true,
+      "comment": "反例段：低置信度 0.51 + 哭声占比 0.21，期望 verify.passed=false、severity=manual_review/urgent_care，用来证明验证器能正确降级",
+      "analyze": {
+        "status": "ok",
+        "top_label": "pain",
+        "top_label_zh": "疼痛",
+        "top_confidence": 0.51,
+        "distribution": [
+          { "label": "pain", "label_zh": "疼痛", "score": 0.51 },
+          { "label": "uncomfortable", "label_zh": "难受不适", "score": 0.34 },
+          { "label": "fright", "label_zh": "受惊", "score": 0.09 },
+          { "label": "hungry", "label_zh": "饥饿", "score": 0.04 },
+          { "label": "disturbance", "label_zh": "不安/烦躁", "score": 0.015 },
+          { "label": "angry", "label_zh": "生气", "score": 0.005 }
+        ],
+        "advice": [
+          "检查是否有外伤、衣物标签摩擦、毛发或线头缠绕手指脚趾",
+          "触摸腹部判断是否胀气发硬，可顺时针轻揉或做蹬自行车动作排气",
+          "测量体温；若伴发热、呕吐、血便、拒奶或哭声持续无法安抚，请立即就医"
+        ],
+        "red_flags": [
+          "哭闹持续超过 3 小时且无法安抚",
+          "发热、呕吐、血便、拒奶或尿量明显减少",
+          "哭声高尖刺耳（脑膜炎样哭声）或异常微弱",
+          "伴随呼吸费力、口唇发青、意识异常、抽搐"
+        ],
+        "acoustics": {
+          "duration_sec": 6.1,
+          "rms": 0.017,
+          "analyzed_segment_sec": 10.0,
+          "candidate_segments": 1,
+          "cry_segment_ratio": 0.21,
+          "estimated_f0_hz": 355.0
+        },
+        "model": {
+          "checkpoint": "C:\\Users\\lmy\\Desktop\\checkpoint-1500",
+          "base": "facebook/wav2vec2-base",
+          "architecture": "Wav2Vec2ForSequenceClassification",
+          "dataset": "Baby Chillanto（参赛者自行处理，混合采样平衡）",
+          "native_hz": 16000,
+          "window_sec": 10.0
+        },
+        "warnings": [
+          "哭声段占比偏低，结果可能受环境噪声影响，建议复录",
+          "最高置信度 0.51 低于 0.6，模型区分度不足，结论仅供参考"
+        ],
+        "latency_ms": 298
+      }
+    },
+    {
+      "id": "03_fright_urgent",
+      "audio_path": "fixture/03_fright.wav",
+      "expected_label": "fright",
+      "analyze": {
+        "status": "ok",
+        "top_label": "fright",
+        "top_label_zh": "受惊",
+        "top_confidence": 0.77,
+        "distribution": [
+          { "label": "fright", "label_zh": "受惊", "score": 0.77 },
+          { "label": "angry", "label_zh": "生气", "score": 0.11 },
+          { "label": "disturbance", "label_zh": "不安/烦躁", "score": 0.07 },
+          { "label": "uncomfortable", "label_zh": "难受不适", "score": 0.03 },
+          { "label": "pain", "label_zh": "疼痛", "score": 0.02 },
+          { "label": "hungry", "label_zh": "饥饿", "score": 0.0 }
+        ],
+        "advice": [
+          "立即抱起贴身安抚，让宝宝感受到身体接触与心跳",
+          "降低环境刺激：调暗灯光、减少突然的声响与强光",
+          "用平稳低音调说话或哼唱，避免频繁更换安抚人"
+        ],
+        "red_flags": [
+          "哭闹持续超过 3 小时且无法安抚",
+          "发热、呕吐、血便、拒奶或尿量明显减少",
+          "哭声高尖刺耳（脑膜炎样哭声）或异常微弱",
+          "伴随呼吸费力、口唇发青、意识异常、抽搐"
+        ],
+        "acoustics": {
+          "duration_sec": 4.8,
+          "rms": 0.044,
+          "analyzed_segment_sec": 10.0,
+          "candidate_segments": 1,
+          "cry_segment_ratio": 0.88,
+          "estimated_f0_hz": 320.0
+        },
+        "model": {
+          "checkpoint": "C:\\Users\\lmy\\Desktop\\checkpoint-1500",
+          "base": "facebook/wav2vec2-base",
+          "architecture": "Wav2Vec2ForSequenceClassification",
+          "dataset": "Baby Chillanto（参赛者自行处理，混合采样平衡）",
+          "native_hz": 16000,
+          "window_sec": 10.0
+        },
+        "warnings": [],
+        "latency_ms": 311
+      }
+    }
+  ],
+  "labels": {
+    "labels": {
+      "pain": "疼痛",
+      "uncomfortable": "难受不适",
+      "fright": "受惊",
+      "hungry": "饥饿",
+      "disturbance": "不安/烦躁",
+      "angry": "生气"
+    },
+    "advice": {
+      "pain": [
+        "检查是否有外伤、衣物标签摩擦、毛发或线头缠绕手指脚趾",
+        "触摸腹部判断是否胀气发硬，可顺时针轻揉或做蹬自行车动作排气",
+        "测量体温；若伴发热、呕吐、血便、拒奶或哭声持续无法安抚，请立即就医"
+      ],
+      "uncomfortable": [
+        "依次排查：尿布是否湿、衣物是否过紧、室温是否在 24–26℃",
+        "检查皮肤褶皱、颈部与臀部有无红疹或湿疹",
+        "尝试襁褓包裹或调整体位，观察是否缓解"
+      ],
+      "fright": [
+        "立即抱起贴身安抚，让宝宝感受到身体接触与心跳",
+        "降低环境刺激：调暗灯光、减少突然的声响与强光",
+        "用平稳低音调说话或哼唱，避免频繁更换安抚人"
+      ],
+      "hungry": [
+        "观察觅食信号：张嘴、转头寻乳、吸吮手指",
+        "按需喂养，记录本次开始与结束时间",
+        "留意上次喂养距今时长，逐步建立喂养规律"
+      ],
+      "disturbance": [
+        "判断是否过度刺激（人多、嘈杂、被频繁抱传），尝试带至安静环境",
+        "规律轻拍、白噪音或缓慢摇晃，帮助宝宝重新安定",
+        "检查是否处于困倦但难以入睡的状态，避免继续逗玩"
+      ],
+      "angry": [
+        "确认是否有未满足的需求：饥饿、困倦、尿布、想要被抱",
+        "保持照护者情绪平稳，用稳定节奏安抚，避免急躁摇晃",
+        "若哭闹伴随肢体僵硬、面部涨红，可尝试襁褓包裹提供边界感"
+      ]
+    },
+    "red_flags": [
+      "哭闹持续超过 3 小时且无法安抚",
+      "发热、呕吐、血便、拒奶或尿量明显减少",
+      "哭声高尖刺耳（脑膜炎样哭声）或异常微弱",
+      "伴随呼吸费力、口唇发青、意识异常、抽搐"
+    ]
+  },
+  "health": {
+    "status": "ready",
+    "model_id": "C:\\Users\\lmy\\Desktop\\checkpoint-1500",
+    "model_base": "facebook/wav2vec2-base",
+    "model_error": null,
+    "labels": ["pain", "uncomfortable", "fright", "hungry", "disturbance", "angry"],
+    "num_labels": 6,
+    "feature_extractor": "local",
+    "native_hz": 16000,
+    "model_input_hz": 16000,
+    "window_sec": 10.0
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "status": "ok",
+  "top_label": "angry",
+  "top_label_zh": "生气",
+  "top_confidence": 0.9969,
+  "distribution": [
+    {
+      "label": "angry",
+      "label_zh": "生气",
+      "score": 0.9969
+    },
+    {
+      "label": "fright",
+      "label_zh": "受惊",
+      "score": 0.0018
+    },
+    {
+      "label": "pain",
+      "label_zh": "疼痛",
+      "score": 0.001
+    },
+    {
+      "label": "uncomfortable",
+      "label_zh": "难受不适",
+      "score": 0.0001
+    },
+    {
+      "label": "hungry",
+      "label_zh": "饥饿",
+      "score": 0.0001
+    },
+    {
+      "label": "disturbance",
+      "label_zh": "不安/烦躁",
+      "score": 0.0001
+    }
+  ],
+  "advice": [
+    "确认是否有未满足的需求：饥饿、困倦、尿布、想要被抱",
+    "保持照护者情绪平稳，用稳定节奏安抚，避免急躁摇晃",
+    "若哭闹伴随肢体僵硬、面部涨红，可尝试襁褓包裹提供边界感"
+  ],
+  "red_flags": [
+    "哭闹持续超过 3 小时且无法安抚",
+    "发热、呕吐、血便、拒奶或尿量明显减少",
+    "哭声高尖刺耳（脑膜炎样哭声）或异常微弱",
+    "伴随呼吸费力、口唇发青、意识异常、抽搐"
+  ],
+  "acoustics": {
+    "duration_sec": 8.0,
+    "rms": 0.21244,
+    "analyzed_segment_sec": 10.0,
+    "candidate_segments": 1,
+    "cry_segment_ratio": 1.0,
+    "estimated_f0_hz": 435.4
+  },
+  "model": {
+    "checkpoint": "C:\\Users\\lmy\\WorkBuddy\\2026-10-14-23-06-56\\baby-cry-ssl\\backend-ssl\\checkpoint-1500",
+    "base": "facebook/wav2vec2-base",
+    "architecture": "Wav2Vec2ForSequenceClassification",
+    "dataset": "Baby Chillanto（参赛者自行处理，混合采样平衡）",
+    "native_hz": 16000,
+    "window_sec": 10.0
+  },
+  "warnings": [],
+  "latency_ms": 360,
+  "_meta": {
+    "note": "live 真实推理结果（权重 checkpoint-1500, sha256 校验一致）",
+    "tested_at": "2026-10-15 02:07:08"
+  }
+}

@@ -1,0 +1,8 @@
+Dataset: e:\cryssl\data1\data1_balanced.csv
+Model: facebook/wav2vec2-base
+Output Dir: results_data1_balanced
+UAR: 0.96987087517934
+Accuracy: 0.9700854700854701
+F1 Macro: 0.9692756607074923
+------------------------------------------------
+

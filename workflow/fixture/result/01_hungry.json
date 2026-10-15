@@ -1,0 +1,212 @@
+{
+  "audio": "fixture/01_hungry.wav",
+  "mode": "offline",
+  "plan": [
+    "health",
+    "analyze",
+    "verify",
+    "labels"
+  ],
+  "analyze": {
+    "status": "ok",
+    "top_label": "hungry",
+    "top_label_zh": "饥饿",
+    "top_confidence": 0.82,
+    "distribution": [
+      {
+        "label": "hungry",
+        "label_zh": "饥饿",
+        "score": 0.82
+      },
+      {
+        "label": "disturbance",
+        "label_zh": "不安/烦躁",
+        "score": 0.08
+      },
+      {
+        "label": "uncomfortable",
+        "label_zh": "难受不适",
+        "score": 0.05
+      },
+      {
+        "label": "fright",
+        "label_zh": "受惊",
+        "score": 0.03
+      },
+      {
+        "label": "pain",
+        "label_zh": "疼痛",
+        "score": 0.015
+      },
+      {
+        "label": "angry",
+        "label_zh": "生气",
+        "score": 0.005
+      }
+    ],
+    "acoustics": {
+      "duration_sec": 8.4,
+      "rms": 0.031,
+      "analyzed_segment_sec": 10,
+      "candidate_segments": 2,
+      "cry_segment_ratio": 0.72,
+      "estimated_f0_hz": 412.5
+    },
+    "warnings": []
+  },
+  "verify": {
+    "passed": true,
+    "severity": "normal",
+    "red_flag_hit": false,
+    "failed_names": [],
+    "checks": [
+      {
+        "name": "backend_status",
+        "pass": true,
+        "value": "ok",
+        "detail": ""
+      },
+      {
+        "name": "confidence",
+        "pass": true,
+        "value": 0.82,
+        "threshold": 0.6
+      },
+      {
+        "name": "cry_ratio",
+        "pass": true,
+        "value": 0.72,
+        "threshold": 0.3
+      },
+      {
+        "name": "acoustic_f0",
+        "pass": true,
+        "value": 412.5,
+        "range": [
+          150,
+          1500
+        ],
+        "detail": ""
+      },
+      {
+        "name": "label_in_vocabulary",
+        "pass": true,
+        "value": "hungry",
+        "vocabulary": [
+          "pain",
+          "uncomfortable",
+          "fright",
+          "hungry",
+          "disturbance",
+          "angry"
+        ]
+      },
+      {
+        "name": "accuracy",
+        "pass": true,
+        "value": "hungry",
+        "expected": "hungry",
+        "detail": "命中期望类别"
+      }
+    ]
+  },
+  "advice": [
+    "观察觅食信号：张嘴、转头寻乳、吸吮手指",
+    "按需喂养，记录本次开始与结束时间",
+    "留意上次喂养距今时长，逐步建立喂养规律"
+  ],
+  "red_flags": [
+    "哭闹持续超过 3 小时且无法安抚",
+    "发热、呕吐、血便、拒奶或尿量明显减少",
+    "哭声高尖刺耳（脑膜炎样哭声）或异常微弱",
+    "伴随呼吸费力、口唇发青、意识异常、抽搐"
+  ],
+  "severity": "normal",
+  "trace": [
+    [
+      "baby_cry_ssl_labels",
+      {},
+      "已加载 6 类标签"
+    ],
+    [
+      "baby_cry_ssl_health",
+      {},
+      "ready · facebook/wav2vec2-base"
+    ],
+    [
+      "analyze_baby_cry_ssl",
+      {
+        "audio_path": "fixture/01_hungry.wav",
+        "top_k": 6
+      },
+      "top=hungry(82%) warnings=0"
+    ],
+    [
+      "verify_baby_cry_result",
+      {
+        "top_label": "hungry",
+        "expected": "hungry"
+      },
+      {
+        "passed": true,
+        "labels_hit": [
+          "hungry"
+        ],
+        "severity": "normal",
+        "red_flag_hit": false,
+        "checks": [
+          {
+            "name": "backend_status",
+            "pass": true,
+            "value": "ok",
+            "detail": ""
+          },
+          {
+            "name": "confidence",
+            "pass": true,
+            "value": 0.82,
+            "threshold": 0.6
+          },
+          {
+            "name": "cry_ratio",
+            "pass": true,
+            "value": 0.72,
+            "threshold": 0.3
+          },
+          {
+            "name": "acoustic_f0",
+            "pass": true,
+            "value": 412.5,
+            "range": [
+              150,
+              1500
+            ],
+            "detail": ""
+          },
+          {
+            "name": "label_in_vocabulary",
+            "pass": true,
+            "value": "hungry",
+            "vocabulary": [
+              "pain",
+              "uncomfortable",
+              "fright",
+              "hungry",
+              "disturbance",
+              "angry"
+            ]
+          },
+          {
+            "name": "accuracy",
+            "pass": true,
+            "value": "hungry",
+            "expected": "hungry",
+            "detail": "命中期望类别"
+          }
+        ],
+        "failed_names": []
+      }
+    ]
+  ],
+  "disclaimer": "本结果仅用于辅助理解婴儿可能的不适信号，不能替代医生诊断。"
+}

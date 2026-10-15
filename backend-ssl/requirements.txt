@@ -1,0 +1,14 @@
+# 婴儿哭声识别后端（SSL 版）依赖
+# 安装：python -m pip install -r requirements.txt
+#
+# 说明：本后端加载参赛者自训练的 Wav2Vec2 checkpoint，
+#      与旧后端（backend/）使用的 DistilHuBERT 第三方模型不同。
+
+torch>=2.0.0
+transformers>=4.40.0
+fastapi>=0.110.0
+uvicorn>=0.27.0
+soundfile>=0.12.1
+numpy>=1.24.0
+librosa>=0.10.0
+pydantic>=2.0.0

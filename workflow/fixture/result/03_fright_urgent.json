@@ -1,0 +1,369 @@
+{
+  "audio": "fixture/03_fright.wav",
+  "mode": "offline",
+  "plan": [
+    "health",
+    "analyze",
+    "verify",
+    "labels"
+  ],
+  "analyze": {
+    "status": "ok",
+    "top_label": "fright",
+    "top_label_zh": "受惊",
+    "top_confidence": 0.77,
+    "distribution": [
+      {
+        "label": "fright",
+        "label_zh": "受惊",
+        "score": 0.77
+      },
+      {
+        "label": "angry",
+        "label_zh": "生气",
+        "score": 0.11
+      },
+      {
+        "label": "disturbance",
+        "label_zh": "不安/烦躁",
+        "score": 0.07
+      },
+      {
+        "label": "uncomfortable",
+        "label_zh": "难受不适",
+        "score": 0.03
+      },
+      {
+        "label": "pain",
+        "label_zh": "疼痛",
+        "score": 0.02
+      },
+      {
+        "label": "hungry",
+        "label_zh": "饥饿",
+        "score": 0
+      }
+    ],
+    "acoustics": {
+      "duration_sec": 4.8,
+      "rms": 0.044,
+      "analyzed_segment_sec": 10,
+      "candidate_segments": 1,
+      "cry_segment_ratio": 0.88,
+      "estimated_f0_hz": 320
+    },
+    "warnings": []
+  },
+  "verify": {
+    "passed": true,
+    "severity": "normal",
+    "red_flag_hit": false,
+    "failed_names": [],
+    "checks": [
+      {
+        "name": "backend_status",
+        "pass": true,
+        "value": "ok",
+        "detail": ""
+      },
+      {
+        "name": "confidence",
+        "pass": true,
+        "value": 0.77,
+        "threshold": 0.6
+      },
+      {
+        "name": "cry_ratio",
+        "pass": true,
+        "value": 0.88,
+        "threshold": 0.3
+      },
+      {
+        "name": "acoustic_f0",
+        "pass": true,
+        "value": 320,
+        "range": [
+          150,
+          1500
+        ],
+        "detail": ""
+      },
+      {
+        "name": "label_in_vocabulary",
+        "pass": true,
+        "value": "fright",
+        "vocabulary": [
+          "pain",
+          "uncomfortable",
+          "fright",
+          "hungry",
+          "disturbance",
+          "angry"
+        ]
+      },
+      {
+        "name": "accuracy",
+        "pass": true,
+        "value": "fright",
+        "expected": "fright",
+        "detail": "命中期望类别"
+      }
+    ]
+  },
+  "advice": [
+    "立即抱起贴身安抚，让宝宝感受到身体接触与心跳",
+    "降低环境刺激：调暗灯光、减少突然的声响与强光",
+    "用平稳低音调说话或哼唱，避免频繁更换安抚人"
+  ],
+  "red_flags": [
+    "哭闹持续超过 3 小时且无法安抚",
+    "发热、呕吐、血便、拒奶或尿量明显减少",
+    "哭声高尖刺耳（脑膜炎样哭声）或异常微弱",
+    "伴随呼吸费力、口唇发青、意识异常、抽搐"
+  ],
+  "severity": "normal",
+  "trace": [
+    [
+      "baby_cry_ssl_labels",
+      {},
+      "已加载 6 类标签"
+    ],
+    [
+      "baby_cry_ssl_health",
+      {},
+      "ready · facebook/wav2vec2-base"
+    ],
+    [
+      "analyze_baby_cry_ssl",
+      {
+        "audio_path": "fixture/01_hungry.wav",
+        "top_k": 6
+      },
+      "top=hungry(82%) warnings=0"
+    ],
+    [
+      "verify_baby_cry_result",
+      {
+        "top_label": "hungry",
+        "expected": "hungry"
+      },
+      {
+        "passed": true,
+        "labels_hit": [
+          "hungry"
+        ],
+        "severity": "normal",
+        "red_flag_hit": false,
+        "checks": [
+          {
+            "name": "backend_status",
+            "pass": true,
+            "value": "ok",
+            "detail": ""
+          },
+          {
+            "name": "confidence",
+            "pass": true,
+            "value": 0.82,
+            "threshold": 0.6
+          },
+          {
+            "name": "cry_ratio",
+            "pass": true,
+            "value": 0.72,
+            "threshold": 0.3
+          },
+          {
+            "name": "acoustic_f0",
+            "pass": true,
+            "value": 412.5,
+            "range": [
+              150,
+              1500
+            ],
+            "detail": ""
+          },
+          {
+            "name": "label_in_vocabulary",
+            "pass": true,
+            "value": "hungry",
+            "vocabulary": [
+              "pain",
+              "uncomfortable",
+              "fright",
+              "hungry",
+              "disturbance",
+              "angry"
+            ]
+          },
+          {
+            "name": "accuracy",
+            "pass": true,
+            "value": "hungry",
+            "expected": "hungry",
+            "detail": "命中期望类别"
+          }
+        ],
+        "failed_names": []
+      }
+    ],
+    [
+      "analyze_baby_cry_ssl",
+      {
+        "audio_path": "fixture/02_pain.wav",
+        "top_k": 6
+      },
+      "top=pain(51%) warnings=2"
+    ],
+    [
+      "verify_baby_cry_result",
+      {
+        "top_label": "pain",
+        "expected": "pain"
+      },
+      {
+        "passed": false,
+        "labels_hit": [
+          "pain"
+        ],
+        "severity": "urgent_care",
+        "red_flag_hit": true,
+        "checks": [
+          {
+            "name": "backend_status",
+            "pass": true,
+            "value": "ok",
+            "detail": ""
+          },
+          {
+            "name": "confidence",
+            "pass": false,
+            "value": 0.51,
+            "threshold": 0.6
+          },
+          {
+            "name": "cry_ratio",
+            "pass": false,
+            "value": 0.21,
+            "threshold": 0.3
+          },
+          {
+            "name": "acoustic_f0",
+            "pass": true,
+            "value": 355,
+            "range": [
+              150,
+              1500
+            ],
+            "detail": ""
+          },
+          {
+            "name": "label_in_vocabulary",
+            "pass": true,
+            "value": "pain",
+            "vocabulary": [
+              "pain",
+              "uncomfortable",
+              "fright",
+              "hungry",
+              "disturbance",
+              "angry"
+            ]
+          },
+          {
+            "name": "accuracy",
+            "pass": true,
+            "value": "pain",
+            "expected": "pain",
+            "detail": "命中期望类别"
+          },
+          {
+            "name": "red_flag_scenario",
+            "pass": false,
+            "value": "pain",
+            "detail": "该类别关联临床红线信号，建议升级护理响应"
+          }
+        ],
+        "failed_names": [
+          "confidence",
+          "cry_ratio"
+        ]
+      }
+    ],
+    [
+      "analyze_baby_cry_ssl",
+      {
+        "audio_path": "fixture/03_fright.wav",
+        "top_k": 6
+      },
+      "top=fright(77%) warnings=0"
+    ],
+    [
+      "verify_baby_cry_result",
+      {
+        "top_label": "fright",
+        "expected": "fright"
+      },
+      {
+        "passed": true,
+        "labels_hit": [
+          "fright"
+        ],
+        "severity": "normal",
+        "red_flag_hit": false,
+        "checks": [
+          {
+            "name": "backend_status",
+            "pass": true,
+            "value": "ok",
+            "detail": ""
+          },
+          {
+            "name": "confidence",
+            "pass": true,
+            "value": 0.77,
+            "threshold": 0.6
+          },
+          {
+            "name": "cry_ratio",
+            "pass": true,
+            "value": 0.88,
+            "threshold": 0.3
+          },
+          {
+            "name": "acoustic_f0",
+            "pass": true,
+            "value": 320,
+            "range": [
+              150,
+              1500
+            ],
+            "detail": ""
+          },
+          {
+            "name": "label_in_vocabulary",
+            "pass": true,
+            "value": "fright",
+            "vocabulary": [
+              "pain",
+              "uncomfortable",
+              "fright",
+              "hungry",
+              "disturbance",
+              "angry"
+            ]
+          },
+          {
+            "name": "accuracy",
+            "pass": true,
+            "value": "fright",
+            "expected": "fright",
+            "detail": "命中期望类别"
+          }
+        ],
+        "failed_names": []
+      }
+    ]
+  ],
+  "disclaimer": "本结果仅用于辅助理解婴儿可能的不适信号，不能替代医生诊断。"
+}
